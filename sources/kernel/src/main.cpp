@@ -28,6 +28,9 @@ extern "C" unsigned int __counter_task_elf_len;
 extern "C" unsigned char __tilt_task_elf[];
 extern "C" unsigned int __tilt_task_elf_len;
 
+extern "C" unsigned char __mmc_test_task1_elf[];
+extern "C" unsigned int __mmc_test_task1_elf_len;
+
 extern "C" int _kernel_main(void) {
     // inicializace souboroveho systemu
     sFilesystem.Initialize();
@@ -42,6 +45,9 @@ extern "C" int _kernel_main(void) {
     sProcessMgr.Create_Process(__logger_task_elf, __logger_task_elf_len, false);
     sProcessMgr.Create_Process(__counter_task_elf, __counter_task_elf_len, false);
     sProcessMgr.Create_Process(__tilt_task_elf, __tilt_task_elf_len, false);
+
+	// nase testovaci tasky
+    sProcessMgr.Create_Process(__mmc_test_task1_elf, __mmc_test_task1_elf_len, false);
 
     // zatim zakazeme IRQ casovace
     sInterruptCtl.Disable_Basic_IRQ(hal::IRQ_Basic_Source::Timer);
