@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/bin/sh
 
-if [ "$1" == "clean" ]; then
-    echo -ne "Cleaning build directories... "
+if [ "$1" = "clean" ]; then
+    printf "Cleaning build directories... "
     rm -rf build/*
     rm -rf userspace/build/*
     echo "Done."
@@ -12,9 +12,9 @@ mkdir -p build >/dev/null 2>&1
 cd build || exit
 
 EXPANSION_BOARD=NONE
-if [ "$1" == "KIV-DPP-01" ]; then
+if [ "$1" = "KIV-DPP-01" ]; then
     EXPANSION_BOARD=KIVDPP01
-elif [ "$1" == "KIV-DPP-02" ]; then
+elif [ "$1" = "KIV-DPP-02" ]; then
     EXPANSION_BOARD=KIVDPP02
 fi
 
