@@ -47,7 +47,7 @@ class MMC_FS_driver : public IFilesystem_Driver {
 
 			// nase FS cesty jsou prozatim jen ciselne indexy
 			auto filepath = atoi(path);
-			if (filepath < 0 || filepath > MMC::FS_SIZE) {
+			if (filepath < 0 || filepath > MMC::MMC_FS_SIZE) {
 				return nullptr;
 			}
 
