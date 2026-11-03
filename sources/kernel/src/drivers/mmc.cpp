@@ -4,7 +4,7 @@ bool MMC::reserve_block(uint8_t index) {
 	if (!check_bounds(index)){
 		return false;
 	}
-	return in_use[index] ? false : in_use[index] = true;
+	return in_use[index] ? false : (in_use[index] = true);
 }
 
 bool MMC::free_block(uint8_t index) {
