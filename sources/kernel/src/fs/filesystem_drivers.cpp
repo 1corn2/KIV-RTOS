@@ -13,7 +13,7 @@
 #include <fs/drivers/pipe_fs.h>
 #include <fs/drivers/broadcast_fs.h>
 #include <fs/drivers/proc_fs.h>
-#include <fs/drivers/mmc_fs.h>
+#include <fs/drivers/array_fs.h>
 
 // pole driveru - tady uvedeme vsechny, ktere jsou v systemu dostupne a ktere je zadouci pro tuto instanci naseho OS pripojit
 const CFilesystem::TFS_Driver CFilesystem::gFS_Drivers[] = {
@@ -24,7 +24,8 @@ const CFilesystem::TFS_Driver CFilesystem::gFS_Drivers[] = {
     { "Shift_Reg_FS", "DEV:sr", &fsShift_Register_FS_Driver },
     { "7Seg_Disp_FS", "DEV:segd", &fsSegment_Display_FS_Driver },
     { "OLED_Disp_FS", "DEV:oled", &fsOLED_Display_FS_Driver },
-    { "MMC_FS", "MNT:", &fsMMC_FS_Driver },
+    { "MMC_FS", "DEV:sd", &fsMMC_FS_Driver },
+    { "ARRAY_FS", "MNT:", &fsARRAY_FS_driver },
 
     // virtualni zarizeni
     { "Mutex", "SYS:mtx", &fsMutex_FS_Driver },

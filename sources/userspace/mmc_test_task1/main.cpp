@@ -31,6 +31,17 @@ int main (int argc, char *argv[]) {
 		} else {
 			write(logpipe, failmsg, strlen(failmsg)+1);
 		}
+
+		close(soubor);
+		auto sdsoubor = open("DEV:sd/0", NFile_Open_Mode::Read_Write);
+		numread = read(sdsoubor, fileres, sizeof(pocitadlo));
+
+		write(logpipe, greetmsg, greetmsglen);
+		if (fileres[0] == pocitadlo[0] && fileres[1] == pocitadlo[1] && fileres[2] == pocitadlo[2] && fileres[3] == pocitadlo[3] && numread == sizeof(uint32_t)) {
+			write(logpipe, succmsg, strlen(succmsg)+1);
+		} else {
+			write(logpipe, failmsg, strlen(failmsg)+1);
+		}
 	}
 
 	close(button);
