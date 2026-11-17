@@ -6,41 +6,61 @@
 #include <hal/intdef.h>
 
 
-// GCC gives false alarm notices when using 'char'
-typedef unsigned short uc;
-typedef const unsigned short cuc;
-// This is version 1 only!
-// TODO: v2 as a union
+// GCC gives false alarm notices when using chars in bit fields,
+// so we use short, it doesn't matter anyway
+//
+// also, unions are always aligned,
+// so we have to duplicate some fields to get the alignment in the main struct right
+union __attribute__((packed)) CSD_versions {
+		struct __attribute__((packed)) {
+			const unsigned short Writeprotect_group_size: 7;
+			const unsigned short Erase_sector_size: 7;
+			const bool Erase_block_enable: 1;
+			const unsigned short Device_size_mult: 3;
+			const unsigned short _IGNORED: 4*3; // I don't feel like writing these out
+			const unsigned short Device_size: 12;
+			const unsigned short reserved4: 2;
+			const unsigned int _INGORED2: 4*1 + 4 + 12; // I don't feel like writing these out
+			const unsigned int _INGORED3: 3*8; // I don't feel like writing these out
+			const unsigned short reserved5: 6;
+			const bool CSD_struct: 2;
+		} v1;
+		struct __attribute__((packed)) {
+			const unsigned short Writeprotect_group_size: 7;
+			const unsigned short Erase_sector_size: 7;
+			const bool Erase_block_enable: 1;
+			const bool reserved: 1;
+			const unsigned int Device_size: 22;
+			const unsigned short reserved4: 6;
+			const unsigned int _IGNORED: 4*1 + 4 + 12;
+			const unsigned int _IGNORED2: 3*8;
+			const unsigned short reserved5: 6;
+			const bool CSD_struct: 2;
+		} v2;
+};
+
+
 struct __attribute__((packed)) CSD_Reg {
 	const bool X: 1;
-	uc CRC: 7;
-	uc reserved: 2;
-	uc File_format: 2;
+	unsigned short CRC: 7;
+	unsigned short reserved: 2;
+	unsigned short File_format: 2;
 	bool Tmp_write_prot: 1;
 	bool Perm_write_prot: 1;
 	bool Copy: 1;
 	bool File_format_grp: 1;
-	cuc reserved2: 5;
+	const unsigned short reserved2: 5;
 	bool Write_bl_partial: 1;
-	cuc Write_bl_len: 4;
-	cuc R2W_factor: 3;
-	cuc reserved3: 2;
+	const unsigned short Write_bl_len: 4;
+	const unsigned short R2W_factor: 3;
+	const unsigned short reserved3: 2;
 	const bool Writeprotect_group_enable: 1;
-	cuc Writeprotect_group_size: 7;
-	cuc Erase_sector_size: 7;
-	const bool Erase_block_enable: 1;
-	cuc Device_size_mult: 3;
-	const unsigned short _IGNORED: 4*3; // I don't feel like writing these out
-	const unsigned short Device_size: 12;
-	cuc reserved4: 2;
-	const unsigned int _INGORED2: 4*1 + 4 + 12; // I don't feel like writing these out
-	const unsigned int _INGORED3: 3*8; // I don't feel like writing these out
-	cuc reserved5: 6;
-	const bool CSD_struct: 2;
-
+	// fields that are different begin here
+	CSD_versions versions;
 };
 
-static_assert(sizeof(CSD_Reg) == 128/8, "CSD struct has the wrong size");
+static_assert(sizeof(CSD_versions::v1) == sizeof(CSD_versions::v2), "CSD versions have different sizes");
+static_assert(sizeof(CSD_Reg) == 16, "CSD struct has the wrong size");
 
 class MMC {
 	public:
