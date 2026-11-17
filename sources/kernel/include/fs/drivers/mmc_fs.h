@@ -1,5 +1,3 @@
-#include <drivers/uart.h>
-#include <hal/peripherals.h>
 #include <fs/filesystem.h>
 #include <stdstring.h>
 #include <drivers/mmc.h>
@@ -39,29 +37,10 @@ class MMC_File final : public IFile {
 		}
 };
 
-static void WriteChars(uint32_t str)
-{
-	char stack[10] = {}; // 2^32 ~= 4 000 000 000
-	if (str == 0) {
-		sUART0.Write('0');
-		return;
-	}
-	int stckptr = 0;
-	while (str > 0) {
-		stack[stckptr++] = (str % 10) + '0';
-		str /= 10;
-	}
-	for (int i = stckptr-1; i >= 0; i--) {
-		sUART0.Write(stack[i]);
-	}
-}
-
 class MMC_FS_driver : public IFilesystem_Driver {
 	public:
         virtual void On_Register() override {
-            auto regcontents = sMMC.read_register(hal::EMMC_Reg::Cmdtm);
-			sUART0.Write("Ahoj z registrace mmc_fs\n");
-			WriteChars(regcontents);
+            // TODO: inicializace SD karty
         }
 
         virtual IFile* Open_File(const char* path, NFile_Open_Mode mode) override {
