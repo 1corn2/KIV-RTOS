@@ -17,9 +17,10 @@ class MMC {
 
 		volatile uint32_t* const mmc_Base;
 
+	public:
 		uint32_t read_register(hal::EMMC_Reg reg);
 		void write_register(hal::EMMC_Reg reg, uint32_t value);
-	public:
+
 		static inline bool check_bounds(int index) {
 			return index >= 0 && index < MMC_FS_SIZE;
 		}
