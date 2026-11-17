@@ -40,7 +40,7 @@ class MMC_File final : public IFile {
 class MMC_FS_driver : public IFilesystem_Driver {
 	public:
         virtual void On_Register() override {
-            //
+            // TODO: inicializace SD karty
         }
 
         virtual IFile* Open_File(const char* path, NFile_Open_Mode mode) override {

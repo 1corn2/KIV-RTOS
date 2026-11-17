@@ -192,4 +192,35 @@ namespace hal {
         Data_Delay      = 6,
         CLKT            = 7, // clock stretch timeout
     };
+
+	constexpr unsigned long EMMC_BASE = Peripheral_Base + 0x00300000;
+	enum class EMMC_Reg {
+		Arg2 = 0,
+		Blksizecnt,
+		Arg1,
+		Cmdtm,
+		Resp0,
+		Resp1,
+		Resp2,
+		Resp3,
+		Data,
+		Status,
+		Control0,
+		Control1,
+		Interrupt,
+		Irpt_mask,
+		Irpt_een,
+		Control2,
+		Force_irpt = 20,
+		Boot_timeout = 28,
+		Dbg_sel,
+		Exrdfifo_cfg = 32,
+		Exrdfifo_en,
+		Tune_step,
+		Tune_steps_std,
+		Tune_steps_ddr,
+		Spi_int_spt = 60,
+		Slotisr_ver = 63,
+
+	};
 }
