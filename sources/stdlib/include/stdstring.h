@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void itoa(unsigned int input, char* output, unsigned int base);
 int atoi(const char* input);
 char* strncpy(char* dest, const char *src, int num);
@@ -9,4 +13,8 @@ char* strcat(char* dest, const char* src);
 char* strncat(char *dest, const char* src, int ssize);
 void bzero(void* memory, int length);
 void memcpy(const void* src, void* dst, int num);
-void memset(void* memory, unsigned char value, int length);
+void* memset(void* memory, unsigned char value, int length);
+
+#ifdef __cplusplus
+}
+#endif

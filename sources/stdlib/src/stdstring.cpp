@@ -134,10 +134,11 @@ void memcpy(const void* src, void* dst, int num) {
     }
 }
 
-void memset(void* memory, unsigned char value, int length) {
+void* memset(void* memory, unsigned char value, int length) {
     char* mem = reinterpret_cast<char*>(memory);
 
     for (int i = 0; i < length; i++) {
         mem[i] = value;
     }
+	return memory;
 }
