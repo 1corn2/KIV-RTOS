@@ -20,7 +20,8 @@ int main (int argc, char *argv[]) {
 	auto failmsg = "Prace se nezdarila";
 
 	while (true) {
-		wait(button, 1, 0x300);
+		for (volatile int i = 0; i < 600000; i++);
+		// wait(button, 1, 0x300);
 		// ano, ja vim, ze se tohle delat nema
 		write(soubor, pocitadlo, sizeof(pocitadlo));
 		auto numread = read(soubor, fileres, sizeof(pocitadlo));
