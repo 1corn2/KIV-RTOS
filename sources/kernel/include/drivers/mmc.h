@@ -25,7 +25,7 @@ union __attribute__((packed)) CSD_versions {
 			const unsigned short _INGORED4: 12; // I don't feel like writing these out
 			const unsigned int _INGORED3: 3*8; // I don't feel like writing these out
 			const unsigned short reserved5: 6;
-			const bool CSD_struct: 2;
+			const unsigned short CSD_struct: 2;
 		} v1;
 		struct __attribute__((packed)) {
 			const unsigned short Writeprotect_group_size: 7;
@@ -37,7 +37,7 @@ union __attribute__((packed)) CSD_versions {
 			const unsigned int _IGNORED: 4*1 + 4 + 12;
 			const unsigned int _IGNORED2: 3*8;
 			const unsigned short reserved5: 6;
-			const bool CSD_struct: 2;
+			const unsigned short CSD_struct: 2;
 		} v2;
 };
 
@@ -85,15 +85,23 @@ class MMC {
 		void write_register(hal::EMMC_Reg reg, uint32_t value);
 		// shortcut to read and parse the CSD register
 		const CSD_Reg* get_CSD() {
-			uint32_t regs[4] = {
-				read_register(hal::EMMC_Reg::Resp0),
-				read_register(hal::EMMC_Reg::Resp1),
-				read_register(hal::EMMC_Reg::Resp2),
-				read_register(hal::EMMC_Reg::Resp3)
-			};
-			static_assert(sizeof(regs) == sizeof(CSD), "Sizes do not match");
-			memcpy(regs, &CSD, sizeof(CSD));
-			return &CSD;
+	    	const uint32_t r0 = read_register(hal::EMMC_Reg::Resp0);
+    		const uint32_t r1 = read_register(hal::EMMC_Reg::Resp1);
+    		const uint32_t r2 = read_register(hal::EMMC_Reg::Resp2);
+    		const uint32_t r3 = read_register(hal::EMMC_Reg::Resp3);
+		
+    		const uint32_t words[4] = {
+        		r0 << 8,                   // CSD bits 31:0
+        		(r1 << 8) | (r0 >> 24),    // CSD bits 63:32
+        		(r2 << 8) | (r1 >> 24),    // CSD bits 95:64
+        		(r3 << 8) | (r2 >> 24),    // CSD bits 127:96
+    		};
+
+    		static_assert(sizeof(CSD_Reg) == 16, "Unexpected CSD layout");
+    		static_assert(sizeof(words) == sizeof(CSD), "Sizes do not match");
+
+   			memcpy(words, &CSD, sizeof(words));
+   			return &CSD;
 		}
 
 		uint32_t get_true_card_capacity(const CSD_Reg* csd) const
