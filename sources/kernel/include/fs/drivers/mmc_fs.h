@@ -181,13 +181,16 @@ public:
             return nullptr;
         }
 
-            sUART0.Write("V1 Device size: ");
-            WriteChars(m_csd->versions.v1.Device_size);
+            sUART0.Write("V2 Device size: ");
+            WriteChars(m_csd->versions.v2.Device_size);
             sUART0.Write("\nV1 Multiplier: ");
             WriteChars(m_csd->versions.v1.Device_size_mult);
             sUART0.Write("\n");
+            sUART0.Write("\ntrue_card_capacity: ");
             WriteChars(sMMC.get_true_card_capacity(m_csd));
             sUART0.Write("\n");
+            sUART0.Write("\nCSD_struct NUMBER: ");
+            WriteChars(m_csd->versions.v1.CSD_struct);
 
 
         // nase FS cesty jsou prozatim jen ciselne indexy

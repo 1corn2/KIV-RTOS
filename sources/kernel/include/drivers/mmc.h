@@ -106,14 +106,20 @@ class MMC {
 
 		uint32_t get_true_card_capacity(const CSD_Reg* csd) const
 		{
-			auto v1 = csd->versions.v1;
-			auto c_size = v1.Device_size;
-			auto c_size_mult = v1.Device_size_mult;
-			auto read_bl_len = v1.Read_bl_len;
-			auto block_len = 2 << (read_bl_len-1);
-			auto mult = 2 << (c_size_mult+1);
-			auto blocknr = (c_size+1)*mult;
-			return blocknr * block_len;
+
+			if (csd->versions.v1.CSD_struct == 0){
+				auto v1 = csd->versions.v1;
+				auto c_size = v1.Device_size;
+				auto c_size_mult = v1.Device_size_mult;
+				auto read_bl_len = v1.Read_bl_len;
+				auto block_len = 2 << (read_bl_len-1);
+				auto mult = 2 << (c_size_mult+1);
+				auto blocknr = (c_size+1)*mult;
+				return blocknr * block_len;
+			}else if (csd->versions.v2.CSD_struct == 1) {
+				auto v2 = csd->versions.v2;
+				return v2.Device_size;
+			}
 		}
 
 		static inline bool check_bounds(int index) {
