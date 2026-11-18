@@ -20,7 +20,9 @@ union __attribute__((packed)) CSD_versions {
 			const unsigned short _IGNORED: 4*3; // I don't feel like writing these out
 			const unsigned short Device_size: 12;
 			const unsigned short reserved4: 2;
-			const unsigned int _INGORED2: 4*1 + 4 + 12; // I don't feel like writing these out
+			const unsigned int _INGORED2: 4*1;
+			const unsigned short Read_bl_len: 4;
+			const unsigned short _INGORED4: 12; // I don't feel like writing these out
 			const unsigned int _INGORED3: 3*8; // I don't feel like writing these out
 			const unsigned short reserved5: 6;
 			const bool CSD_struct: 2;
@@ -92,6 +94,18 @@ class MMC {
 			static_assert(sizeof(regs) == sizeof(CSD), "Sizes do not match");
 			memcpy(regs, &CSD, sizeof(CSD));
 			return &CSD;
+		}
+
+		uint32_t get_true_card_capacity(const CSD_Reg* csd) const
+		{
+			auto v1 = csd->versions.v1;
+			auto c_size = v1.Device_size;
+			auto c_size_mult = v1.Device_size_mult;
+			auto read_bl_len = v1.Read_bl_len;
+			auto block_len = 2 << (read_bl_len-1);
+			auto mult = 2 << (c_size_mult+1);
+			auto blocknr = (c_size+1)*mult;
+			return blocknr * block_len;
 		}
 
 		static inline bool check_bounds(int index) {

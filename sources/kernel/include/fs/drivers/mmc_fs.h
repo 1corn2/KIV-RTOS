@@ -186,6 +186,8 @@ public:
             sUART0.Write("\nV1 Multiplier: ");
             WriteChars(m_csd->versions.v1.Device_size_mult);
             sUART0.Write("\n");
+            WriteChars(sMMC.get_true_card_capacity(m_csd));
+            sUART0.Write("\n");
 
 
         // nase FS cesty jsou prozatim jen ciselne indexy
