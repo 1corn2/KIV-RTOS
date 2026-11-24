@@ -17,13 +17,21 @@ union __attribute__((packed)) CSD_versions {
 			const unsigned short Erase_sector_size: 7;
 			const bool Erase_block_enable: 1;
 			const unsigned short Device_size_mult: 3;
-			const unsigned short _IGNORED: 4*3; // I don't feel like writing these out
+			const unsigned short VDD_w_curr_max: 3;
+			const unsigned short VDD_w_curr_min: 3;
+			const unsigned short VDD_r_curr_max: 3;
+			const unsigned short VDD_r_curr_min: 3;
 			const unsigned short Device_size: 12;
 			const unsigned short reserved4: 2;
-			const unsigned int _INGORED2: 4*1;
+			const bool DSR_impl: 1;
+			const bool Read_blk_misalign: 1;
+			const bool Write_blk_misalign: 1;
+			const bool Read_bl_partial: 1;
 			const unsigned short Read_bl_len: 4;
-			const unsigned short _INGORED4: 12; // I don't feel like writing these out
-			const unsigned int _INGORED3: 3*8; // I don't feel like writing these out
+			const unsigned short Card_comm_classes: 12;
+			const unsigned int Tran_speed: 8;
+			const unsigned int NSAC: 8;
+			const unsigned int TAAC: 8;
 			const unsigned short reserved5: 6;
 			const unsigned short CSD_struct: 2;
 		} v1;
@@ -34,10 +42,15 @@ union __attribute__((packed)) CSD_versions {
 			const bool reserved: 1;
 			const unsigned int Device_size: 22;
 			const unsigned short reserved4: 6;
-			const unsigned int _IGNORED: 4*1;
+			const bool DSR_impl: 1;
+			const bool Read_blk_misalign: 1;
+			const bool Write_blk_misalign: 1;
+			const bool Read_bl_partial: 1;
 			const unsigned int Read_bl_len: 4;
-			const unsigned int _IGNORED3: 12;
-			const unsigned int _IGNORED2: 3*8;
+			const unsigned int Card_comm_classes: 12;
+			const unsigned int Tran_speed: 8;
+			const unsigned int NSAC: 8;
+			const unsigned int TAAC: 8;
 			const unsigned short reserved5: 6;
 			const unsigned short CSD_struct: 2;
 		} v2;
