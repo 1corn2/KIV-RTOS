@@ -4,26 +4,18 @@
 MMC::MMC(uint32_t baseptr)
 	: mmc_Base(reinterpret_cast<volatile uint32_t* const>(baseptr)) {}
 
-bool MMC::reserve_block(uint8_t index) {
+bool MMC::reserve_block(uint32_t index) {
 	if (!check_bounds(index)){
 		return false;
 	}
 	return in_use[index] ? false : (in_use[index] = true);
 }
 
-bool MMC::free_block(uint8_t index) {
+bool MMC::free_block(uint32_t index) {
 	if (!check_bounds(index)) {
 		return false;
 	}
 	return in_use[index] ? !(in_use[index] = false) : false;
-}
-
-uint32_t MMC::read_block(uint8_t index) {
-	return fakefs[index];
-}
-
-void MMC::write_block(uint8_t index, uint32_t data) {
-	fakefs[index] = data;
 }
 
 uint32_t MMC::read_register(hal::EMMC_Reg reg) {
@@ -35,12 +27,14 @@ void MMC::write_register(hal::EMMC_Reg reg, uint32_t value) {
 }
 
 
-
-
 bool MMC::Write_Block(uint32_t block_index, const uint32_t* buffer_128_words) {
     if (!m_initialized || m_csd == nullptr || buffer_128_words == nullptr) {
         return false;
     }
+
+	// go from the back
+	block_index = get_block_count(m_csd) - block_index - 1;
+
 
     // 1. Wait until both Command (bit 0) and Data (bit 1) lines are free
     while (sMMC.read_register(hal::EMMC_Reg::Status) & ((1 << 0) | (1 << 1))) {}
@@ -114,6 +108,9 @@ bool MMC::Read_Block(uint32_t block_index, uint32_t* buffer_128_words) {
     if (!m_initialized || m_csd == nullptr || buffer_128_words == nullptr) {
         return false;
     }
+
+	// go from the back
+	block_index = get_block_count(m_csd) - block_index - 1;
 
     // 1. Wait until both Command (bit 0) and Data (bit 1) lines are free
     while (sMMC.read_register(hal::EMMC_Reg::Status) & ((1 << 0) | (1 << 1))) {}

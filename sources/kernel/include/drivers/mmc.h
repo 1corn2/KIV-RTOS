@@ -81,15 +81,14 @@ static_assert(sizeof(CSD_Reg) == 16, "CSD struct has the wrong size");
 
 class MMC {
 	public:
-		static constexpr const auto MMC_FS_SIZE = 20;
+		// TODO: actually track the card's block size
+		static constexpr const auto BLOCK_SIZE = 512;
+		// arbitrary number of blocks we keep track of
+		static constexpr const auto MAX_MMC_BLOCK_CNT = 4096;
+		// TODO: to bitmap to save some space
+		char in_use[MAX_MMC_BLOCK_CNT];
 		MMC(uint32_t baseptr);
 	private:
-		// TODO: ukladat tyhle data na SD karte
-		// drzi data
-		uint32_t fakefs[MMC_FS_SIZE]{};
-		// drzi stav vyuziti
-		bool in_use[MMC_FS_SIZE]{};
-
 		// base offset into memory as per repo standard
 		volatile uint32_t* const mmc_Base;
 
@@ -158,20 +157,18 @@ class MMC {
 			}
 		}
 
-		static inline bool check_bounds(int index) {
-			return index >= 0 && index < MMC_FS_SIZE;
+		// for userspace, check we are within blocks we care to manage
+		inline bool check_bounds(int index) const {
+			auto realcnt = get_block_count(this->m_csd);
+			return index >= 0 && index < (realcnt > MAX_MMC_BLOCK_CNT ? MAX_MMC_BLOCK_CNT : realcnt);
 		}
+
+
 		// TODO: rezervovat podle rezimu cteni/psani
 		// Zarezervuje block na karte
-		bool reserve_block(uint8_t index);
+		bool reserve_block(uint32_t index);
 		// uvolni block na pouziti
-		bool free_block(uint8_t index);
-		// dalsi placeholdery
-		// TODO: tyhle by mozna mely vracet, kolik znaku/bloku bylo zapsano/precteno?
-		uint32_t read_block(uint8_t index);
-		void write_block(uint8_t index, uint32_t data);
-
-
+		bool free_block(uint32_t index);
 
 		// realne funkce
     	bool Write_Block(uint32_t block_index, const uint32_t* buffer_128_words);

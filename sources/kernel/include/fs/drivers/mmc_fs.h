@@ -6,35 +6,52 @@
 
 class MMC_File final : public IFile {
 	private:
-		uint8_t index;
+		uint32_t blocknumber;
+		uint16_t index = 0;
 	public:
 		// TODO: novy file type major::block
-		MMC_File(uint8_t ind): IFile(NFile_Type_Major::Unspecified), index{ind}{};
+		MMC_File(uint32_t ind): IFile(NFile_Type_Major::Unspecified), blocknumber{ind}{};
 		~MMC_File() {
 
 		}
-		// TODO: seek, tell, atd.
+		// TODO: seek, tell, reset, atd.
 
         // cte ze souboru do bufferu, num je velikost bufferu (maximalni pocet bytu k precteni); vraci skutecne precteny pocet znaku
         virtual uint32_t Read(char* buffer, uint32_t num) override {
-			auto tmp = sMMC.read_block(this->index);
-			// vracime idealne cele cislo, jinak pokud jsme dostali moc maly buffer, tak jen tolik, co muzeme
-			auto realnum = num >= sizeof(tmp) ? sizeof(tmp) : num;
-			memcpy(&tmp, buffer, realnum);
+			char ourbuf[512];
+			sMMC.Read_Block(this->blocknumber, reinterpret_cast<uint32_t*>(ourbuf));
+
+			auto realnum = 0;
+			if (index+num > MMC::BLOCK_SIZE) {
+				realnum = MMC::BLOCK_SIZE - index;
+			} else {
+				realnum = num;
+			}
+			memcpy(ourbuf+index, buffer, realnum);
+			index += realnum;
 			return realnum;
 		};
+
         // zapise z bufferu do souboru, num je velikost bufferu (maximalni pocet bytu k zapsani); vraci skutecne zapsany pocet znaku
         virtual uint32_t Write(const char* buffer, uint32_t num) override {
-			uint32_t tmp{};
-			// stejne jako nahore, zastresujeme mnozstvi napsanych bytu na velikosti uint32_t
-			auto realnum = num >= sizeof(tmp) ? sizeof(tmp) : num;
-			memcpy(buffer, &tmp, realnum);
-			sMMC.write_block(this->index, tmp);
+			char ourbuf[512];
+			sMMC.Read_Block(this->blocknumber, reinterpret_cast<uint32_t*>(ourbuf));
+
+			auto realnum = 0;
+			if (index+num > MMC::BLOCK_SIZE) {
+				realnum = MMC::BLOCK_SIZE - index;
+			} else {
+				realnum = num;
+			}
+
+			memcpy(buffer, ourbuf+index, realnum);
+			index += realnum;
+			sMMC.Write_Block(this->blocknumber, reinterpret_cast<uint32_t*>(ourbuf));
 			return realnum;
 		};
 
 		virtual bool Close() override {
-			sMMC.free_block(this->index);
+			sMMC.free_block(this->blocknumber);
 			return IFile::Close();
 		}
 };
@@ -52,7 +69,7 @@ public:
 
         // nase FS cesty jsou prozatim jen ciselne indexy
         auto filepath = atoi(path);
-        if (filepath < 0 || filepath > MMC::MMC_FS_SIZE) {
+        if (filepath < 0) {
             return nullptr;
         }
 
