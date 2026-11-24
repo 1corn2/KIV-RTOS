@@ -65,6 +65,157 @@ private:
     const CSD_Reg* m_csd = nullptr;
     bool m_initialized = false;
 
+
+
+    bool Write_Block(uint32_t block_index, const uint32_t* buffer_128_words) {
+    if (!m_initialized || m_csd == nullptr || buffer_128_words == nullptr) {
+        return false;
+    }
+
+    // 1. Wait until both Command (bit 0) and Data (bit 1) lines are free
+    while (sMMC.read_register(hal::EMMC_Reg::Status) & ((1 << 0) | (1 << 1))) {}
+
+    // 2. Configure Block Size (512 bytes) and Block Count (1 block)
+    sMMC.write_register(hal::EMMC_Reg::Blksizecnt, (1 << 16) | 512);
+
+    // 3. Calculate address argument:
+    // SDHC/SDXC (CSD v2.0) uses block addressing; SDSC (CSD v1.0) uses byte addressing
+    uint32_t address = (m_csd->versions.v2.CSD_struct == 1)
+                       ? block_index
+                       : (block_index * 512);
+
+    // 4. Clear all interrupt flags
+    sMMC.write_register(hal::EMMC_Reg::Interrupt, 0xFFFFFFFF);
+
+    // 5. Build CMD24 (WRITE_BLOCK):
+    // - Index 24:        24 << 24
+    // - CMD_ISDATA:      1 << 21  (command involves data transfer)
+    // - CMD_IXCHK_EN:    1 << 20  (check response index)
+    // - CMD_CRCCHK_EN:   1 << 19  (check response CRC)
+    // - CMD_RSPNS_TYPE:  2 << 16  (48-bit R1 response)
+    // - TM_DAT_DIR:      0 << 4   (0 = transfer from host to card)
+    uint32_t cmd24 = (24 << 24) | (1 << 21) | (1 << 20) | (1 << 19) | (2 << 16);
+
+    sMMC.write_register(hal::EMMC_Reg::Arg1, address);
+    sMMC.write_register(hal::EMMC_Reg::Cmdtm, cmd24);
+
+    // 6. Wait for Command Done (bit 0) or Error (bit 15)
+    uint32_t irq = 0;
+    do {
+        irq = sMMC.read_register(hal::EMMC_Reg::Interrupt);
+    } while (!(irq & ((1 << 0) | (1 << 15))));
+
+    sMMC.write_register(hal::EMMC_Reg::Interrupt, (1 << 0)); // Clear CMD_DONE
+    if (irq & (1 << 15)) {
+        return false;
+    }
+
+    // 7. Wait for Write Ready (bit 4 = WRITE_RDY) or Error (bit 15)
+    do {
+        irq = sMMC.read_register(hal::EMMC_Reg::Interrupt);
+    } while (!(irq & ((1 << 4) | (1 << 15))));
+
+    sMMC.write_register(hal::EMMC_Reg::Interrupt, (1 << 4)); // Clear WRITE_RDY
+    if (irq & (1 << 15)) {
+        return false;
+    }
+
+    // 8. Write 512 bytes (128 x 32-bit words) into the DATA register
+    for (int i = 0; i < 128; i++) {
+        sMMC.write_register(hal::EMMC_Reg::Data, buffer_128_words[i]);
+    }
+
+    // 9. Wait for Data Transfer Done (bit 1 = DATA_DONE) or Error (bit 15)
+    // The controller waits for the card to release its busy signal before setting DATA_DONE
+    do {
+        irq = sMMC.read_register(hal::EMMC_Reg::Interrupt);
+    } while (!(irq & ((1 << 1) | (1 << 15))));
+
+    sMMC.write_register(hal::EMMC_Reg::Interrupt, (1 << 1)); // Clear DATA_DONE
+    if (irq & (1 << 15)) {
+        return false;
+    }
+
+    return true;
+}
+
+
+
+    bool Read_Block(uint32_t block_index, uint32_t* buffer_128_words) {
+    if (!m_initialized || m_csd == nullptr || buffer_128_words == nullptr) {
+        return false;
+    }
+
+    // 1. Wait until both Command (bit 0) and Data (bit 1) lines are free
+    while (sMMC.read_register(hal::EMMC_Reg::Status) & ((1 << 0) | (1 << 1))) {}
+
+    // 2. Configure Block Size (512 bytes) and Block Count (1 block)
+    // BLKCNT = 1 (bits 31:16), BLKSIZE = 512 (bits 9:0)
+    sMMC.write_register(hal::EMMC_Reg::Blksizecnt, (1 << 16) | 512);
+
+    // 3. Calculate address argument:
+    // SDHC/SDXC (CSD v2.0) uses block addressing; SDSC (CSD v1.0) uses byte addressing
+    uint32_t address = (m_csd->versions.v2.CSD_struct == 1)
+                       ? block_index
+                       : (block_index * 512);
+
+    // 4. Clear all interrupt flags
+    sMMC.write_register(hal::EMMC_Reg::Interrupt, 0xFFFFFFFF);
+
+    // 5. Build CMD17 (READ_SINGLE_BLOCK):
+    // - Index 17:        17 << 24
+    // - CMD_ISDATA:      1 << 21  (command involves data transfer)
+    // - CMD_IXCHK_EN:    1 << 20  (check response index)
+    // - CMD_CRCCHK_EN:   1 << 19  (check response CRC)
+    // - CMD_RSPNS_TYPE:  2 << 16  (48-bit R1 response)
+    // - TM_DAT_DIR:      1 << 4   (1 = transfer from card to host)
+    uint32_t cmd17 = (17 << 24) | (1 << 21) | (1 << 20) | (1 << 19) | (2 << 16) | (1 << 4);
+
+    sMMC.write_register(hal::EMMC_Reg::Arg1, address);
+    sMMC.write_register(hal::EMMC_Reg::Cmdtm, cmd17);
+
+    // 6. Wait for Command Done (bit 0) or Error (bit 15)
+    uint32_t irq = 0;
+    do {
+        irq = sMMC.read_register(hal::EMMC_Reg::Interrupt);
+    } while (!(irq & ((1 << 0) | (1 << 15))));
+
+    sMMC.write_register(hal::EMMC_Reg::Interrupt, (1 << 0)); // Clear CMD_DONE
+    if (irq & (1 << 15)) {
+        return false;
+    }
+
+    // 7. Wait for Read Ready (bit 5 = READ_RDY) or Error (bit 15)
+    do {
+        irq = sMMC.read_register(hal::EMMC_Reg::Interrupt);
+    } while (!(irq & ((1 << 5) | (1 << 15))));
+
+    sMMC.write_register(hal::EMMC_Reg::Interrupt, (1 << 5)); // Clear READ_RDY
+    if (irq & (1 << 15)) {
+        return false;
+    }
+
+    // 8. Read 512 bytes (128 x 32-bit words) from the DATA register
+    for (int i = 0; i < 128; i++) {
+        buffer_128_words[i] = sMMC.read_register(hal::EMMC_Reg::Data);
+    }
+
+    // 9. Wait for Data Transfer Done (bit 1 = DATA_DONE) or Error (bit 15)
+    do {
+        irq = sMMC.read_register(hal::EMMC_Reg::Interrupt);
+    } while (!(irq & ((1 << 1) | (1 << 15))));
+
+    sMMC.write_register(hal::EMMC_Reg::Interrupt, (1 << 1)); // Clear DATA_DONE
+    if (irq & (1 << 15)) {
+        return false;
+    }
+
+    return true;
+}
+
+
+
+
     bool Send_Command(uint32_t cmdtm, uint32_t arg, uint32_t* resp0 = nullptr) {
         // Čekání na uvolnění příkazové linky (CMD_INHIBIT == 0)
         while (sMMC.read_register(hal::EMMC_Reg::Status) & (1 << 0)) {}
@@ -181,16 +332,60 @@ public:
             return nullptr;
         }
 
-            sUART0.Write("V2 Device size: ");
-            WriteChars(m_csd->versions.v2.Device_size);
-            sUART0.Write("\nV1 Multiplier: ");
-            WriteChars(m_csd->versions.v1.Device_size_mult);
-            sUART0.Write("\n");
-            sUART0.Write("\ntrue_card_capacity: ");
-            WriteChars(sMMC.get_true_card_capacity(m_csd));
-            sUART0.Write("\n");
-            sUART0.Write("\nCSD_struct NUMBER: ");
-            WriteChars(m_csd->versions.v1.CSD_struct);
+
+        sUART0.Write("POCET BLOKU\n");
+
+        uint32_t pocet_bloku = sMMC.get_block_count(m_csd);
+
+        WriteChars(pocet_bloku);
+        sUART0.Write("\n");
+        sUART0.Write("POSLEDNI BLOK=\n");
+
+
+
+
+        uint32_t block0[128]; // 128 * 4 = 512 bytes
+        if (Read_Block(pocet_bloku-1, block0)) {
+            // Check the standard boot sector signature at bytes 510-511 (top 16 bits of word 127)
+            uint16_t boot_signature = (block0[127] >> 16) & 0xFFFF;
+            // If valid MBR/FAT, boot_signature will be 0xAA55
+            WriteChars(boot_signature);
+        }
+
+        for (int i = 0; i < 128; i++) {
+            WriteChars(block0[i]);
+        }
+
+
+
+
+
+        ///WRITE TO BLOCK
+        ///
+        ///
+
+        block0[127]=block0[127]+1;
+        Write_Block(pocet_bloku-1, block0);
+
+        sUART0.Write("ZAPIS HOTOV\n");
+
+
+
+
+
+
+
+
+            // sUART0.Write("V2 Device size: ");
+            // WriteChars(m_csd->versions.v2.Device_size);
+            // sUART0.Write("\nV1 Multiplier: ");
+            // WriteChars(m_csd->versions.v1.Device_size_mult);
+            // sUART0.Write("\n");
+            // sUART0.Write("\ntrue_card_capacity: ");
+            // WriteChars(sMMC.get_true_card_capacity(m_csd));
+            // sUART0.Write("\n");
+            // sUART0.Write("\nCSD_struct NUMBER: ");
+            // WriteChars(m_csd->versions.v1.CSD_struct);
 
 
         // nase FS cesty jsou prozatim jen ciselne indexy
