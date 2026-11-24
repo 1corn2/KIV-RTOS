@@ -95,6 +95,10 @@ class MMC {
 
 		// So we don't have to do dynamic allocations
 		CSD_Reg CSD{};
+
+    	uint32_t m_rca = 0;
+    	const CSD_Reg* m_csd = nullptr;
+    	bool m_initialized = false;
 	public:
 		uint32_t read_register(hal::EMMC_Reg reg);
 		void write_register(hal::EMMC_Reg reg, uint32_t value);
@@ -166,6 +170,17 @@ class MMC {
 		// TODO: tyhle by mozna mely vracet, kolik znaku/bloku bylo zapsano/precteno?
 		uint32_t read_block(uint8_t index);
 		void write_block(uint8_t index, uint32_t data);
+
+
+
+		// realne funkce
+    	bool Write_Block(uint32_t block_index, const uint32_t* buffer_128_words);
+    	bool Read_Block(uint32_t block_index, uint32_t* buffer_128_words);
+
+    	bool Send_Command(uint32_t cmdtm, uint32_t arg, uint32_t* resp0 = nullptr);
+    	bool Init_SD_Card();
+
+		bool initialized() const;
 };
 
 extern MMC sMMC;
