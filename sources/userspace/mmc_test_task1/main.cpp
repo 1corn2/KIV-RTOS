@@ -1,6 +1,7 @@
 #include "drivers/gpio.h"
 #include "fs/filesystem.h"
 #include "stdfile.h"
+#include "drivers/uart.h"
 
 
 int main (int argc, char *argv[]) {
@@ -19,8 +20,33 @@ int main (int argc, char *argv[]) {
 	auto succmsg = "Prace se zdarila";
 	auto failmsg = "Prace se nezdarila";
 
-	while (true) {
-		for (volatile int i = 0; i < 600000; i++);
+	const char* text = "AHOJ";
+
+	for (volatile int i = 0; i < 600000; i++);
+
+
+
+	write(logpipe, greetmsg, greetmsglen);
+
+	write(soubor, text, strlen(text)+1);
+	// read(soubor, )
+	close(soubor);
+
+	soubor = open("MNT:0", NFile_Open_Mode::Read_Write);
+	char readtext[20];
+
+	read(soubor, readtext, sizeof(readtext));
+
+
+
+	write(logpipe, readtext, 15);
+
+
+
+
+
+	while (false) {
+
 		// wait(button, 1, 0x300);
 		// ano, ja vim, ze se tohle delat nema
 		write(soubor, pocitadlo, sizeof(pocitadlo));
