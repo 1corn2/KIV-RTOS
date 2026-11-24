@@ -121,6 +121,23 @@ class MMC {
 			}else if (csd->versions.v2.CSD_struct == 1) {
 				auto v2 = csd->versions.v2;
 				return v2.Device_size;
+			} else {
+				// v3 card, womp womp
+			}
+		}
+
+		uint32_t get_block_count(const CSD_Reg* csd) const {
+			if (csd->versions.v1.CSD_struct == 0) {
+				// V1
+				auto v1 = csd->versions.v1;
+				auto c_size_mult = v1.Device_size_mult;
+				auto mult = 2 << (c_size_mult+1);
+				auto c_size = v1.Device_size;
+				auto blocknr = (c_size+1)*mult;
+				return blocknr;
+			} else {
+				//V2
+				return (csd->versions.v2.Device_size+1) * 1024;
 			}
 		}
 
