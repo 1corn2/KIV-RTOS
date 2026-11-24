@@ -34,7 +34,9 @@ union __attribute__((packed)) CSD_versions {
 			const bool reserved: 1;
 			const unsigned int Device_size: 22;
 			const unsigned short reserved4: 6;
-			const unsigned int _IGNORED: 4*1 + 4 + 12;
+			const unsigned int _IGNORED: 4*1;
+			const unsigned int Read_bl_len: 4;
+			const unsigned int _IGNORED3: 12;
 			const unsigned int _IGNORED2: 3*8;
 			const unsigned short reserved5: 6;
 			const unsigned short CSD_struct: 2;
