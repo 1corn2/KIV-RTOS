@@ -99,6 +99,10 @@ public:
         auto res = new MMC_File(filepath, mode);
         return res;
     }
+
+	uint32_t Get_Block_Count() const {
+		return sMMC.get_block_count(sMMC.get_CSD());
+	}
 };
 
 MMC_FS_driver fsMMC_FS_Driver;
