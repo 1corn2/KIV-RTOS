@@ -8,6 +8,7 @@ class MMC_File final : public IFile {
 	private:
 		uint32_t blocknumber;
 		uint16_t index = 0;
+		uint32_t filesize = MMC::BLOCK_SIZE; // TODO: get real file size
 	public:
 		// TODO: novy file type major::block
 		MMC_File(uint32_t ind): IFile(NFile_Type_Major::Unspecified), blocknumber{ind}{};
@@ -53,6 +54,19 @@ class MMC_File final : public IFile {
 		virtual bool Close() override {
 			sMMC.free_block(this->blocknumber);
 			return IFile::Close();
+		}
+
+		virtual bool Seek(uint32_t offset) override {
+			if (offset > this->filesize) {
+				return false;
+			} else {
+				index = offset;
+				return true;
+			}
+		}
+
+		virtual uint32_t Tell() const override  {
+			return this->index;
 		}
 };
 

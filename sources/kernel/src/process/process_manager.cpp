@@ -1,3 +1,4 @@
+#include "process/swi.h"
 #include <process/process_manager.h>
 #include <process/resource_manager.h>
 #include <process/elf_loader.h>
@@ -428,6 +429,16 @@ void CProcess_Manager::Handle_Filesystem_SWI(NSWI_Filesystem_Service svc_idx, ui
             Handle_WaitAll_SWI(r0, r1, r2, target);
             break;
         }
+		case NSWI_Filesystem_Service::Tell:
+		{
+            target.r0 = mCurrent_Task_Node->task->opened_files[r0]->Tell();
+			break;
+		}
+		case NSWI_Filesystem_Service::Seek:
+		{
+            target.r0 = mCurrent_Task_Node->task->opened_files[r0]->Seek(r1);
+			break;
+		}
     }
 }
 

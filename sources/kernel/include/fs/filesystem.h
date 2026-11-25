@@ -22,6 +22,7 @@ enum class NFile_Type_Major {
     Condition_Var   = 4, // podminkova promenna
     Pipe            = 5, // roura
     Broadcast       = 6, // broadcast channel
+    Block       	= 7, // blokove zarizeni
 };
 
 enum class NFile_Open_Mode {
@@ -88,7 +89,8 @@ class IFile {
         // zjisti typ souboru
         NFile_Type_Major Get_File_Type() const { return mType; };
 
-        // TODO: seek, atd...
+		virtual uint32_t Tell() const { return 0; };
+		virtual bool Seek(uint32_t offset) { return false; };
 };
 
 class IFilesystem_Driver {

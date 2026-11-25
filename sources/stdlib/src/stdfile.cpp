@@ -107,6 +107,27 @@ uint32_t wait_all(uint32_t* files, uint32_t file_count, uint32_t notified_deadli
     return file_handle;
 }
 
+uint32_t tell(uint32_t file) {
+    uint32_t result;
+
+    asm volatile("mov r0, %0" : : "r" (file));
+    asm volatile("swi 72");
+    asm volatile("mov %0, r0" : "=r" (result));
+
+    return result;
+}
+
+bool seek(uint32_t file, uint32_t offset) {
+    bool result;
+
+    asm volatile("mov r0, %0" : : "r" (file));
+    asm volatile("mov r1, %0" : : "r" (offset));
+    asm volatile("swi 73");
+    asm volatile("mov %0, r0" : "=r" (result));
+
+    return result;
+}
+
 bool sleep(uint32_t ticks, uint32_t notified_deadline) {
     uint32_t retcode;
 

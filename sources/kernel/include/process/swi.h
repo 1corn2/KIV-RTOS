@@ -96,6 +96,16 @@ enum class NSWI_Filesystem_Service {
     // IN: r0 = pole handlu otevrenych souboru, nad kterymi se ceka, r1 = pocet handlu v poli, r2 = nova deadline po probuzeni (nebo Deadline_Unchanged pokud se nema menit, nebo Indefinite pokud se ma zrusit)
     // OUT: r0 = handle souboru, kvuli kteremu je proces probuzen nebo Invalid_Handle pri chybe/problemu
     WaitAll         = 7,
+
+	// Ziskani offsetu psani/cteni do/z souboru
+	// IN: r0 = handle otevreneho souboru
+	// OUT: r0 = offset
+	Tell			= 8,
+
+	// Nastaveni offsetu psani/cteni do/z souboru
+	// IN: r0 = handle otevreneho souboru, r1 = offset
+	// OUT: r0 = indikator uspechu
+	Seek			= 9,
 };
 
 // mozne IOCtl operace nad souborem
