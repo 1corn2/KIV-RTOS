@@ -12,12 +12,15 @@ class ARRAY_FS_driver : public IFilesystem_Driver {
         }
 
         virtual IFile* Open_File(const char* path, NFile_Open_Mode mode) override {
+			char tmpbuf[256];
 			uint32_t block_index = atoi(path);
 
 			// go from the back
 			block_index = block_count - block_index - 1;
 
-			return fsMMC_FS_Driver.Open_File(path, mode);
+			itoa(block_index, tmpbuf, 10);
+
+			return fsMMC_FS_Driver.Open_File(tmpbuf, mode);
 		}
 };
 
