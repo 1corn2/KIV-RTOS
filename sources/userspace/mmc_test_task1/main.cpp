@@ -30,7 +30,17 @@ int main (int argc, char *argv[]) {
 
 	write(soubor, text, strlen(text)+1);
 	// read(soubor, )
+
+	seek(soubor, 7);
+
+	write(soubor, text, strlen(text)+1);
+
+	seek(soubor, 0);
+
+	write(soubor, "123", 3);
+
 	close(soubor);
+
 
 	soubor = open("MNT:0", NFile_Open_Mode::Read_Write);
 	char readtext[20];
@@ -38,9 +48,11 @@ int main (int argc, char *argv[]) {
 	read(soubor, readtext, sizeof(readtext));
 
 
-
-	write(logpipe, readtext, 15);
-
+	for (uint32_t i = 0; i < 15; i++){
+		char readchar[1];
+		readchar[0] = readtext[i];
+		write(	logpipe, readchar, 1);
+	}
 
 
 
