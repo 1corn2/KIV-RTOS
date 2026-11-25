@@ -31,11 +31,8 @@ extern "C" unsigned int __tilt_task_elf_len;
 extern "C" unsigned char __mmc_test_task1_elf[];
 extern "C" unsigned int __mmc_test_task1_elf_len;
 
-// TODO: kontrolovat ve kterem rezimu je soubor otevren
 // TODO: mozna pustit vice ctenaru najednou, ale porad jen jednoho zapisovatele k souboru
 // TODO: testovaci procesy
-// TODO: seek, tell, reset
-// TODO: major file type block definice enumu
 // TODO: mozna "bitmapu" predelat na realnou bitmapu
 extern "C" int _kernel_main(void) {
     // inicializace souboroveho systemu

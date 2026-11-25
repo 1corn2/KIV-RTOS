@@ -9,16 +9,18 @@ class MMC_File final : public IFile {
 		uint32_t blocknumber;
 		uint16_t index = 0;
 		uint32_t filesize = MMC::BLOCK_SIZE; // TODO: get real file size
+		NFile_Open_Mode mode;
 	public:
-		// TODO: novy file type major::block
-		MMC_File(uint32_t ind): IFile(NFile_Type_Major::Unspecified), blocknumber{ind}{};
+		MMC_File(uint32_t ind, NFile_Open_Mode opmod): IFile(NFile_Type_Major::Block), blocknumber{ind}, mode{opmod}{};
 		~MMC_File() {
 
 		}
-		// TODO: seek, tell, reset, atd.
 
         // cte ze souboru do bufferu, num je velikost bufferu (maximalni pocet bytu k precteni); vraci skutecne precteny pocet znaku
         virtual uint32_t Read(char* buffer, uint32_t num) override {
+			if (mode == NFile_Open_Mode::Write_Only) {
+				return 0;
+			}
 			char ourbuf[512];
 			sMMC.Read_Block(this->blocknumber, reinterpret_cast<uint32_t*>(ourbuf));
 
@@ -35,6 +37,9 @@ class MMC_File final : public IFile {
 
         // zapise z bufferu do souboru, num je velikost bufferu (maximalni pocet bytu k zapsani); vraci skutecne zapsany pocet znaku
         virtual uint32_t Write(const char* buffer, uint32_t num) override {
+			if (mode == NFile_Open_Mode::Read_Only) {
+				return 0;
+			}
 			char ourbuf[512];
 			sMMC.Read_Block(this->blocknumber, reinterpret_cast<uint32_t*>(ourbuf));
 
@@ -91,7 +96,7 @@ public:
             return nullptr;
         }
 
-        auto res = new MMC_File(filepath);
+        auto res = new MMC_File(filepath, mode);
         return res;
     }
 };
