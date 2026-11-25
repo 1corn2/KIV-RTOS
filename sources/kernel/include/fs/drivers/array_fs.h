@@ -12,7 +12,7 @@ class ARRAY_FS_driver : public IFilesystem_Driver {
         }
 
         virtual IFile* Open_File(const char* path, NFile_Open_Mode mode) override {
-			char tmpbuf[256];
+			char tmpbuf[32];
 			uint32_t block_index = atoi(path);
 
 			// go from the back

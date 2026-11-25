@@ -84,13 +84,7 @@ class MMC {
 		// TODO: actually track the card's block size
 		static constexpr const auto BLOCK_SIZE = 512;
 		// TODO: to bitmap to save some space
-		char *m_in_use;
 		MMC(uint32_t baseptr);
-		~MMC() {
-			if (m_in_use) {
-				delete m_in_use;
-			}
-		};
 	private:
 		// base offset into memory as per repo standard
 		volatile uint32_t* const mmc_Base;
@@ -101,8 +95,8 @@ class MMC {
     	uint32_t m_rca = 0;
     	const CSD_Reg* m_csd = nullptr;
     	bool m_initialized = false;
-		uint32_t m_blk_cnt = 0;
 	public:
+		uint32_t m_blk_cnt = 0;
 		uint32_t read_register(hal::EMMC_Reg reg);
 		void write_register(hal::EMMC_Reg reg, uint32_t value);
 		// shortcut to read and parse the CSD register
@@ -128,7 +122,6 @@ class MMC {
 
 		uint32_t get_true_card_capacity(const CSD_Reg* csd) const
 		{
-
 			if (csd->versions.v1.CSD_struct == 0){
 				auto v1 = csd->versions.v1;
 				auto c_size = v1.Device_size;

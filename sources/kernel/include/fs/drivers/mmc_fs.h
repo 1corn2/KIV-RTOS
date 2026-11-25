@@ -6,10 +6,10 @@
 
 class MMC_File final : public IFile {
 	private:
-		uint32_t blocknumber;
+		const uint32_t blocknumber;
 		uint16_t index = 0;
-		uint32_t filesize = MMC::BLOCK_SIZE; // TODO: get real file size
-		NFile_Open_Mode mode;
+		const uint32_t filesize = MMC::BLOCK_SIZE; // TODO: get real file size
+		const NFile_Open_Mode mode;
 	public:
 		MMC_File(uint32_t ind, NFile_Open_Mode opmod): IFile(NFile_Type_Major::Block), blocknumber{ind}, mode{opmod}{};
 		~MMC_File() {
@@ -101,7 +101,7 @@ public:
     }
 
 	uint32_t Get_Block_Count() const {
-		return sMMC.get_block_count(sMMC.get_CSD());
+		return sMMC.m_blk_cnt;
 	}
 };
 

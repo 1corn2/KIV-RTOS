@@ -8,14 +8,14 @@ bool MMC::reserve_block(uint32_t index) {
 	if (!check_bounds(index)){
 		return false;
 	}
-	return m_in_use[index] ? false : (m_in_use[index] = true);
+	return true;
 }
 
 bool MMC::free_block(uint32_t index) {
 	if (!check_bounds(index)) {
 		return false;
 	}
-	return m_in_use[index] ? !(m_in_use[index] = false) : false;
+	return true;
 }
 
 uint32_t MMC::read_register(hal::EMMC_Reg reg) {
@@ -281,15 +281,6 @@ bool MMC::Init_SD_Card() {
     }
 
 	m_blk_cnt = get_block_count(m_csd);
-	m_in_use = new char[m_blk_cnt];
-	if (!m_in_use) {
-		m_initialized = false;
-		return false;
-	} else {
-		m_initialized = true;
-		return true;
-	}
-
 	m_initialized = true;
     return true;
 }
