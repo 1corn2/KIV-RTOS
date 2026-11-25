@@ -83,11 +83,14 @@ class MMC {
 	public:
 		// TODO: actually track the card's block size
 		static constexpr const auto BLOCK_SIZE = 512;
-		// arbitrary number of blocks we keep track of
-		static constexpr const auto MAX_MMC_BLOCK_CNT = 4096;
 		// TODO: to bitmap to save some space
-		char in_use[MAX_MMC_BLOCK_CNT];
+		char *m_in_use;
 		MMC(uint32_t baseptr);
+		~MMC() {
+			if (m_in_use) {
+				delete m_in_use;
+			}
+		};
 	private:
 		// base offset into memory as per repo standard
 		volatile uint32_t* const mmc_Base;
@@ -98,6 +101,7 @@ class MMC {
     	uint32_t m_rca = 0;
     	const CSD_Reg* m_csd = nullptr;
     	bool m_initialized = false;
+		uint32_t m_blk_cnt = 0;
 	public:
 		uint32_t read_register(hal::EMMC_Reg reg);
 		void write_register(hal::EMMC_Reg reg, uint32_t value);
@@ -159,8 +163,7 @@ class MMC {
 
 		// for userspace, check we are within blocks we care to manage
 		inline bool check_bounds(int index) const {
-			auto realcnt = get_block_count(this->m_csd);
-			return index >= 0 && index < (realcnt > MAX_MMC_BLOCK_CNT ? MAX_MMC_BLOCK_CNT : realcnt);
+			return index >= 0 && index < m_blk_cnt;
 		}
 
 
