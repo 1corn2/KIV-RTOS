@@ -1,17 +1,15 @@
 #include "drivers/gpio.h"
 #include "fs/filesystem.h"
 #include "stdfile.h"
-#include "drivers/uart.h"
 
-
-int main (int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 	auto button = open("DEV:gpio/19", NFile_Open_Mode::Read_Only);
-    NGPIO_Interrupt_Type irtype = NGPIO_Interrupt_Type::Rising_Edge;
-    ioctl(button, NIOCtl_Operation::Enable_Event_Detection, &irtype);
-    uint32_t logpipe = pipe("log", 32);
+	NGPIO_Interrupt_Type irtype = NGPIO_Interrupt_Type::Rising_Edge;
+	ioctl(button, NIOCtl_Operation::Enable_Event_Detection, &irtype);
+	uint32_t logpipe = pipe("log", 32);
 
 	auto greetmsg = "Ahoj proces 1";
-	auto greetmsglen = strlen(greetmsg)+1;
+	auto greetmsglen = strlen(greetmsg) + 1;
 
 	char pocitadlo[4] = {13, 12, 11, 10};
 	char fileres[4] = {0, 0, 0, 0};
@@ -20,20 +18,19 @@ int main (int argc, char *argv[]) {
 	auto succmsg = "Prace se zdarila";
 	auto failmsg = "Prace se nezdarila";
 
-	const char* text = "AHOJ";
+	const char *text = "AHOJ";
 
-	for (volatile int i = 0; i < 600000; i++);
-
-
+	for (volatile int i = 0; i < 600000; i++)
+		;
 
 	write(logpipe, greetmsg, greetmsglen);
 
-	write(soubor, text, strlen(text)+1);
+	write(soubor, text, strlen(text) + 1);
 	// read(soubor, )
 
 	seek(soubor, 7);
 
-	write(soubor, text, strlen(text)+1);
+	write(soubor, text, strlen(text) + 1);
 
 	seek(soubor, 0);
 
@@ -41,21 +38,16 @@ int main (int argc, char *argv[]) {
 
 	close(soubor);
 
-
 	soubor = open("MNT:0", NFile_Open_Mode::Read_Write);
 	char readtext[20];
 
 	read(soubor, readtext, sizeof(readtext));
 
-
-	for (uint32_t i = 0; i < 15; i++){
+	for (uint32_t i = 0; i < 15; i++) {
 		char readchar[1];
 		readchar[0] = readtext[i];
-		write(	logpipe, readchar, 1);
+		write(logpipe, readchar, 1);
 	}
-
-
-
 
 	while (false) {
 
@@ -65,10 +57,12 @@ int main (int argc, char *argv[]) {
 		auto numread = read(soubor, fileres, sizeof(pocitadlo));
 
 		write(logpipe, greetmsg, greetmsglen);
-		if (fileres[0] == pocitadlo[0] && fileres[1] == pocitadlo[1] && fileres[2] == pocitadlo[2] && fileres[3] == pocitadlo[3] && numread == sizeof(uint32_t)) {
-			write(logpipe, succmsg, strlen(succmsg)+1);
+		if (fileres[0] == pocitadlo[0] && fileres[1] == pocitadlo[1] &&
+			fileres[2] == pocitadlo[2] && fileres[3] == pocitadlo[3] &&
+			numread == sizeof(uint32_t)) {
+			write(logpipe, succmsg, strlen(succmsg) + 1);
 		} else {
-			write(logpipe, failmsg, strlen(failmsg)+1);
+			write(logpipe, failmsg, strlen(failmsg) + 1);
 		}
 
 		close(soubor);
@@ -76,10 +70,12 @@ int main (int argc, char *argv[]) {
 		numread = read(sdsoubor, fileres, sizeof(pocitadlo));
 
 		write(logpipe, greetmsg, greetmsglen);
-		if (fileres[0] == pocitadlo[0] && fileres[1] == pocitadlo[1] && fileres[2] == pocitadlo[2] && fileres[3] == pocitadlo[3] && numread == sizeof(uint32_t)) {
-			write(logpipe, succmsg, strlen(succmsg)+1);
+		if (fileres[0] == pocitadlo[0] && fileres[1] == pocitadlo[1] &&
+			fileres[2] == pocitadlo[2] && fileres[3] == pocitadlo[3] &&
+			numread == sizeof(uint32_t)) {
+			write(logpipe, succmsg, strlen(succmsg) + 1);
 		} else {
-			write(logpipe, failmsg, strlen(failmsg)+1);
+			write(logpipe, failmsg, strlen(failmsg) + 1);
 		}
 	}
 
